@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>Password Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+
+</head>
+<body class="container">
+    <h1 class="heading">Password Generator</h1>
+
+    <form class="form">
+        <div class="form-group">
+            <label for="length" class="text">Password Length:</label>
+            <input type="number" class="form-control" id="length" required>
+        </div>
+
+            <br>
+        <div class="checkbox-wrapper">
+            <input id="upper" value="upper" name="checkbox" type="checkbox">
+            <label class="terms-label" for="upper">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" class="checkbox-svg">
+                <mask fill="white" id="path-1-inside-1_476_5-37">
+                  <rect height="200" width="200"></rect>
+                </mask>
+                <rect mask="url(#path-1-inside-1_476_5-37)" stroke-width="40" class="checkbox-box" height="200" width="200"></rect>
+                <path stroke-width="15" d="M52 111.018L76.9867 136L149 64" class="checkbox-tick"></path>
+              </svg>
+              <span class="label-text">Uppercase</span>
+            </label>
+          </div> <br>
+          <div class="checkbox-wrapper">
+            <input id="lower" value="lower" name="checkbox" type="checkbox">
+            <label class="terms-label" for="lower">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" class="checkbox-svg">
+                <mask fill="white" id="path-1-inside-1_476_5-37">
+                  <rect height="200" width="200"></rect>
+                </mask>
+                <rect mask="url(#path-1-inside-1_476_5-37)" stroke-width="40" class="checkbox-box" height="200" width="200"></rect>
+                <path stroke-width="15" d="M52 111.018L76.9867 136L149 64" class="checkbox-tick"></path>
+              </svg>
+              <span class="label-text">LowerCase</span>
+            </label>
+          </div> <br>
+          <div class="checkbox-wrapper">
+            <input id="number" value="number" name="checkbox" type="checkbox">
+            <label class="terms-label" for="number">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" class="checkbox-svg">
+                <mask fill="white" id="path-1-inside-1_476_5-37">
+                  <rect height="200" width="200"></rect>
+                </mask>
+                <rect mask="url(#path-1-inside-1_476_5-37)" stroke-width="40" class="checkbox-box" height="200" width="200"></rect>
+                <path stroke-width="15" d="M52 111.018L76.9867 136L149 64" class="checkbox-tick"></path>
+              </svg>
+              <span class="label-text">Number</span>
+            </label>
+          </div><br>
+          <div class="checkbox-wrapper">
+            <input id="symbol" value="symbol" name="checkbox" type="checkbox">
+            <label class="terms-label" for="symbol">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" class="checkbox-svg">
+                <mask fill="white" id="path-1-inside-1_476_5-37">
+                  <rect height="200" width="200"></rect>
+                </mask>
+                <rect mask="url(#path-1-inside-1_476_5-37)" stroke-width="40" class="checkbox-box" height="200" width="200"></rect>
+                <path stroke-width="15" d="M52 111.018L76.9867 136L149 64" class="checkbox-tick"></path>
+              </svg>
+              <span class="label-text">Symbol</span>
+            </label>
+          </div>
+          <br>
+          
+
+        
+        <button type="button"  onclick="generatePassword()">Generate Password</button>
+          <br/><br>
+        <div>
+            <label for="output" class="text">Generated Password:</label>
+            <input type="text" class="form-control" id="output" readonly>
+        </div>
+        <br>
+        <button type="button" class="copy" onclick="copyToClipboard()">Copy to Clipboard</button>
+    </form>
+    <br>
+    <div>
+        <label for="password-strength" class="text">Password Strength:</label>
+        <meter max="4" id="password-strength" low="1" high="3" optimum="4" value="0"></meter>
+        <div class="scoretext" id="password-strength-message" class="password-strength-message"></div>
+
+    </div>
+
+
+
+    <script>
+        function generatePassword() {
+            const length = document.getElementById('length').value;
+            const upper = document.getElementById('upper').checked;
+            const lower = document.getElementById('lower').checked;
+            const number = document.getElementById('number').checked;
+            const symbol = document.getElementById('symbol').checked;
+
+            const formData = new FormData();
+            formData.append('length', length);
+            if (upper) formData.append('upper', 'upper');
+            if (lower) formData.append('lower', 'lower');
+            if (number) formData.append('number', 'number');
+            if (symbol) formData.append('symbol', 'symbol');
+
+            fetch('/generate_password', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('output').value = data.password;
+                    const passwordStrength = zxcvbn(data.password).score;
+                    console.log('Password Strength Score:', passwordStrength);
+                    displayPasswordStrength(passwordStrength);                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+
+        function displayPasswordStrength(score) {
+            const strengthMessage = getStrengthMessage(score);
+            document.getElementById('password-strength').value = score;
+            document.getElementById('password-strength-message').innerText = strengthMessage;
+        }
+
+        function getStrengthMessage(score) {
+            switch (score) {
+                case 0:
+                case 1:
+                    return 'Weak';
+                case 2:
+                    return 'Moderate';
+                case 3:
+                    return 'Strong';
+                case 4:
+                    return 'Very Strong';
+                default:
+                    return '';
+            }
+        }
+
+
+        
+        function copyToClipboard() {
+            const output = document.getElementById('output');
+            output.select();
+            document.execCommand('copy');
+            alert('Password copied to clipboard!');
+        } 
+    </script>
+</body>
+</html>
