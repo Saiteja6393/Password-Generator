@@ -1,7 +1,8 @@
 # Password-Generator
 
 The Flask web app "**Password Generator**" is a user-friendly tool designed to generate secure and randomized passwords. <br>
-Users can access the application through a web browser using the link >> [click here](saiteja29.pythonanywhere.com) <br>
+Users can access the application through a web browser. <be>
+Visit the live Password Generator app [here](https://saiteja29.pythonanywhere.com/). <br>
   where they have the option to customize various parameters <br>
     1. password length <br>
     2. special characters <br>
